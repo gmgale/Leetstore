@@ -1,0 +1,32 @@
+[
+  {
+    "name": "Banana",
+    "price": "0.99",
+    "decription": "A wonderful yellow banana.",
+    "images": ["Banana URL goes here..."]
+  },
+  {
+    "name": "Chicken",
+    "price": "5.99",
+    "decription": "Tasty free-range chicken.",
+    "images": ["Chicken URL goes here..."]
+  },
+  {
+    "name": "Red wine",
+    "price": "8.99",
+    "decription": "Elegent and smooth red wine.",
+    "images": ["Red wine URL goes here..."]
+  },
+  {
+    "name": "Chocolate Bar",
+    "price": "2.99",
+    "decription": "An unhealthy snack made from cocoa beans.",
+    "images": ["Chocolate URL goes here..."]
+  },
+  {
+    "name": "House plant",
+    "price": "13.37",
+    "decription": "A nice green plant for your office",
+    "images": ["Plant URL foes here..."]
+  }
+]
