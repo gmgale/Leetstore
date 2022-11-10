@@ -1,43 +1,44 @@
-const mongoose = require("mongoose");
-const dotenv = require("dotenv");
-
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const mongoose_1 = __importDefault(require("mongoose"));
+const dotenv_1 = __importDefault(require("dotenv"));
+const app_1 = __importDefault(require("./app"));
 // Global uncaught exception
 process.on("uncaughtException", (err) => {
-  console.log(err.name, err.message);
-  console.log("Uncaught exception, shutting down...");
-  process.exit(1);
+    console.log(err.name, err.message);
+    console.log("Uncaught exception, shutting down...");
+    process.exit(1);
 });
-
-dotenv.config({ path: "./config.env" });
-dotenv.config({ path: "./secrets.env" });
-
+dotenv_1.default.config({ path: "./config.env" });
+dotenv_1.default.config({ path: "./secrets.env" });
 // Database connection
-const dbConn = process.env.DATABASE.replace(
-  "<USERNAME>",
-  process.env.MONGODB_USER
-).replace("<PASSWORD>", process.env.MONGODB_PASS);
-
-mongoose
-  .connect(dbConn, {
-    useNewUrlParser: true,
-  })
-  .then(() => {
+let dbConn;
+let mongodbUser;
+let mongodbPass;
+if (process.env.MONGODB_USER) {
+    mongodbUser = process.env.MONGODB_USER;
+}
+if (process.env.MONGODB_PASS) {
+    mongodbPass = process.env.MONGODB_PASS;
+}
+if (process.env.DATABASE) {
+    dbConn = process.env.DATABASE.replace("<USERNAME>", mongodbUser).replace("<PASSWORD>", mongodbPass);
+}
+mongoose_1.default.connect(dbConn).then(() => {
     console.log("DB connection sucessful!");
-  });
-
-const app = require("./app");
-
-const port = process.env.LOCAL_PORT || 3000;
-
-const server = app.listen(port, () => {
-  console.log(`App running on port ${port}...`);
 });
-
+const port = process.env.LOCAL_PORT || 3000;
+const server = app_1.default.listen(port, () => {
+    console.log(`App running on port ${port}...`);
+});
 // Global unhandled promise rejection
 process.on("unhandledRejection", (err) => {
-  console.log(err.name, err.message);
-  server.close(() => {
-    console.log("Unhandled rejection, shutting down...");
-    process.exit(1);
-  });
+    console.log(err.name, err.message);
+    server.close(() => {
+        console.log("Unhandled rejection, shutting down...");
+        process.exit(1);
+    });
 });
