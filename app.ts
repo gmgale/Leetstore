@@ -1,15 +1,17 @@
-const express = require("express");
-const morgan = require("morgan");
-const rateLimit = require("express-rate-limit");
-const helmet = require("helmet");
-const mongoSanitize = require("express-mongo-sanitize");
-const xssClean = require("xss-clean");
-const hpp = require("hpp");
+/*  */
+import express from "express";
 
-const AppError = require("./utils/appError");
-const globalErrorHandler = require("./controllers/errorController");
-const productRouter = require("./routes/productRoutes");
-const userRouter = require("./routes/userRoutes");
+import morgan from "morgan";
+import rateLimit from "express-rate-limit";
+import helmet from "helmet";
+import mongoSanitize from "express-mongo-sanitize";
+// import xssClean from "xss-clean"; TO-DO: Fix this
+import hpp from "hpp";
+
+import AppError from "./utils/appError";
+import globalErrorHandler from "./controllers/errorController";
+import productRouter from "./routes/productRoutes";
+import userRouter from "./routes/userRoutes";
 
 const app = express();
 
@@ -41,7 +43,7 @@ app.use(
 // Data sanitization against noSQL query injection
 app.use(mongoSanitize()); // Remove $ and . from body/query
 // Data sanitization against XXS
-app.use(xssClean());
+// app.use(xssClean());
 // Prevent HTTP parameter pollution
 app.use(
   hpp({
@@ -54,7 +56,7 @@ app.use("/api/v1/products", productRouter);
 app.use("/api/v1/users", userRouter);
 
 app.all("*", (req, res, next) => {
-  next(new AppError(`Cant find ${req.originalUrl} on this server`));
+  next(new AppError(`Cant find ${req.originalUrl} on this server`, 400, res));
 });
 
 app.use(globalErrorHandler);

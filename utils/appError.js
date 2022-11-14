@@ -1,17 +1,17 @@
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
 class AppError extends Error {
-  constructor(message, statusCode, res = null) {
-    super(message);
-
-    this.statusCode = statusCode;
-    this.status = `${statusCode}`.startsWith("4") ? "fail" : "error";
-    this.isOperational = true;
-    if (res) {
-      res.status(this.statusCode).JSON({
-        status: this.message,
-      });
+    constructor(message, statusCode, res) {
+        super(message);
+        this.statusCode = statusCode;
+        this.status = `${statusCode}`.startsWith("4") ? "fail" : "error";
+        this.isOperational = true;
+        if (res) {
+            res.status(this.statusCode).json({
+                status: this.message,
+            });
+        }
+        Error.captureStackTrace(this, this.constructor);
     }
-    Error.captureStackTrace(this, this.constructor);
-  }
 }
-
-module.exports = AppError;
+exports.default = AppError;

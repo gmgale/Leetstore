@@ -1,33 +1,17 @@
-const express = require("express");
-
-const router = express.Router();
-const productController = require("../controllers/productController");
-const authController = require("../controllers/authController");
-
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = require("express");
+const router = (0, express_1.Router)();
+const productController_1 = require("../controllers/productController");
+const authController_1 = require("../controllers/authController");
 const dump = (req, res, next) => {
-  console.log(req);
-  next();
+    console.log(req);
+    next();
 };
-
-router
-  .route("/top-products")
-  .get(productController.aliasTopProducts, productController.getAllProducts);
-
-router.route("/product-stats").get(productController.getProductStats);
-
-router
-  .route("/")
-  .get(productController.getAllProducts)
-  .post(authController.protect, productController.addProduct);
-
-router
-  .route("/:id")
-  .get(productController.getProduct)
-  .patch(productController.updateProduct)
-  .delete(
-    authController.protect,
-    // authController.restrictTo("admin", "manager", "lead-manager"),
-    productController.deleteProduct
-  );
-
-module.exports = router;
+router.route("/top-products").get(productController_1.aliasTopProducts, productController_1.getAllProducts);
+router.route("/product-stats").get(productController_1.getProductStats);
+router.route("/").get(productController_1.getAllProducts).post(authController_1.protect, productController_1.addProduct);
+router.route("/:id").get(productController_1.getProduct).patch(productController_1.updateProduct).delete(authController_1.protect, 
+// authController.restrictTo("admin", "manager", "lead-manager"),
+productController_1.deleteProduct);
+exports.default = router;

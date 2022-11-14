@@ -15,21 +15,22 @@ process.on("uncaughtException", (err) => {
 dotenv_1.default.config({ path: "./config.env" });
 dotenv_1.default.config({ path: "./secrets.env" });
 // Database connection
-let dbConn;
-let mongodbUser;
-let mongodbPass;
-if (process.env.MONGODB_USER) {
-    mongodbUser = process.env.MONGODB_USER;
+const mongodbUser = process.env.MONGODB_USER;
+const mongodbPass = process.env.MONGODB_PASS;
+const mongodbDataBase = process.env.MONGODB_DATABASE;
+if (typeof mongodbUser === "string" &&
+    typeof mongodbPass === "string" &&
+    typeof mongodbDataBase === "string") {
+    const dbConn = mongodbDataBase
+        .replace("<USERNAME>", mongodbUser)
+        .replace("<PASSWORD>", mongodbPass);
+    mongoose_1.default.connect(dbConn).then(() => {
+        console.log("DB connection sucessful!");
+    });
 }
-if (process.env.MONGODB_PASS) {
-    mongodbPass = process.env.MONGODB_PASS;
+else {
+    throw new Error("Error in connection settings.");
 }
-if (process.env.DATABASE) {
-    dbConn = process.env.DATABASE.replace("<USERNAME>", mongodbUser).replace("<PASSWORD>", mongodbPass);
-}
-mongoose_1.default.connect(dbConn).then(() => {
-    console.log("DB connection sucessful!");
-});
 const port = process.env.LOCAL_PORT || 3000;
 const server = app_1.default.listen(port, () => {
     console.log(`App running on port ${port}...`);
