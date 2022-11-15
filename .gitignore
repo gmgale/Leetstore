@@ -4,3 +4,4 @@ test-report.html
 coverage
 globalConfig.json
 .vscode
+dist

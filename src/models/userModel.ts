@@ -1,7 +1,7 @@
-const mongoose = require("mongoose");
+import mongoose from "mongoose";
 const validator = require("validator");
 const bcrypt = require("bcryptjs");
-const crypto = require("crypto");
+import crypto from "crypto";
 
 const userSchema = new mongoose.Schema({
   name: {
@@ -33,7 +33,8 @@ const userSchema = new mongoose.Schema({
     required: [true, "Please confirm your password"],
     validate: {
       // This only works on create and save
-      validator: function (el) {
+      validator: (el: any) => {
+        // @ts-ignore
         return el === this.password;
       },
       message: "The passwords must match.",
@@ -48,10 +49,11 @@ const userSchema = new mongoose.Schema({
     select: false,
   },
 });
-
+// @ts-ignore
 userSchema.pre("/^find/", function (next) {
   // This points to current query
   // When a finf/findById etc is called, only active (non-"deleted") users will be returned
+  // @ts-ignore
   this.find({ active: { $ne: false } });
   next();
 });
@@ -60,6 +62,7 @@ userSchema.pre("save", async function (next) {
   if (!this.isModified("password") || this.isNew) return next();
 
   // Set the date slightly in the past so new JWT token is newer than this
+  // @ts-ignore
   this.passwordChangedAt = Date.now() - 1000;
   next();
 });
@@ -72,21 +75,23 @@ userSchema.pre("save", async function (next) {
   this.password = await bcrypt.hash(this.password, 12);
 
   // Remove passwordConfirm as we no longer need it and cant store it
+  // @ts-ignore
   this.passwordConfirm = undefined;
   next();
 });
 
 userSchema.methods.correctPassword = async function (
-  candidatePassword,
-  userPassword
+  candidatePassword: string,
+  userPassword: string
 ) {
   return await bcrypt.compare(candidatePassword, userPassword);
 };
 
-userSchema.methods.changedPasswordAfter = function (JWTTimestamp) {
+userSchema.methods.changedPasswordAfter = function (JWTTimestamp: number) {
   // If user never changed password, default to false
   if (this.passwordChangedAt) {
     const changedtimestamp = parseInt(
+      // @ts-ignore
       this.passwordChangedAt.getTime() / 1000,
       10
     );
@@ -110,6 +115,4 @@ userSchema.methods.createPasswordResetToken = function () {
   return resetToken;
 };
 
-const User = mongoose.model("User", userSchema);
-
-module.exports = User;
+export const User = mongoose.model("User", userSchema);

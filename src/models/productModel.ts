@@ -1,5 +1,5 @@
-const mongoose = require("mongoose");
-const slugify = require("slugify");
+import mongoose from "mongoose";
+import slugify from "slugify";
 // const validator = require("validator");
 
 const productSchema = new mongoose.Schema(
@@ -23,8 +23,10 @@ const productSchema = new mongoose.Schema(
       required: [false, "A discount must have a price."],
       min: [0, "A discount must be greater than 0."],
       validate: {
-        validator: function (val) {
+        // @ts-ignore
+        validator: function (val: number) {
           // 'this' only points to current doc on NEW document only (eg. not update)
+          // @ts-ignore
           return val < this.price;
         },
         messsage: "Discount price must be below the original price.)",
@@ -71,13 +73,15 @@ productSchema.pre("save", function (next) {
 productSchema.pre(/^find/, function (next) {
   // Only display non-hidden products when using find, findOne etc.
   this.find({ hiddenProduct: { $ne: true } });
+  // @ts-ignore
   this.start = Date.now();
   next();
 });
 
 // eslint-disable-next-line prefer-arrow-callback
-productSchema.post(/^find/, function (docs, next) {
+productSchema.post(/^find/, function (_docs, next) {
   if (process.env.NODE_ENV === "development") {
+    // @ts-ignore
     console.log(`Query took ${Date.now() - this.start} ms.`);
   }
   next();
@@ -91,6 +95,4 @@ productSchema.pre("aggregate", function (next) {
   next();
 });
 
-const Product = mongoose.model("Product", productSchema);
-
-module.exports = Product;
+export const Product = mongoose.model("Product", productSchema);

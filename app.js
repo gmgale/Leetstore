@@ -12,7 +12,7 @@ const express_mongo_sanitize_1 = __importDefault(require("express-mongo-sanitize
 // import xssClean from "xss-clean"; TO-DO: Fix this
 const hpp_1 = __importDefault(require("hpp"));
 const appError_1 = __importDefault(require("./utils/appError"));
-const errorController_1 = __importDefault(require("./controllers/errorController"));
+const errorController_1 = __importDefault(require("./src/controllers/errorController"));
 const productRoutes_1 = __importDefault(require("./routes/productRoutes"));
 const userRoutes_1 = __importDefault(require("./routes/userRoutes"));
 const app = (0, express_1.default)();

@@ -1,18 +1,24 @@
-const Product = require("../models/productModel");
-const APIFeatures = require("../utils/apiFeatures");
-const catchAsync = require("../utils/catchAsync");
-const AppError = require("../utils/appError");
+import { APIFeatures } from "../utils/apiFeatures";
+import { catchAsync } from "../utils/catchAsync";
+import { AppError } from "../utils/appError";
 
 import { Request, Response, NextFunction } from "express";
+import { Product } from "../models/productModel";
 
-export function aliasTopProducts(req: Request, next: NextFunction) {
+export function aliasTopProducts(
+  req: Request,
+  _res: Response,
+  next: NextFunction
+) {
   req.query.limit = "3";
   req.query.sory = "price";
-  next();
+  return next();
 }
 
-export function getAllProducts(req: Request, res: Response): void {
-  catchAsync(async (req, res) => {
+export function getAllProducts(req: Request, res: Response) {
+  catchAsync(async () => {
+    console.error(new Error());
+    //@ts-ignore
     const features = new APIFeatures(Product.find(), req.query)
       .filter()
       .sort()
@@ -26,33 +32,30 @@ export function getAllProducts(req: Request, res: Response): void {
       result: products,
     });
   });
-} 
+}
 
 export function getProduct(req: Request, res: Response, next: NextFunction) {
-  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const id = await Product.findById(req.params.id, (err: Error) => {
-      if (err) {
-        next(new AppError("No product found with that ID", 404));
-      }
-    }).clone();
-
-    res.status(200).json({
-      status: "success",
-      data: id,
-    });
+  catchAsync(async () => {
+    try {
+      const id = await Product.findById(req.params.id).clone();
+      res.status(200).json({
+        status: "success",
+        data: id,
+      });
+    } catch (e) {
+      next(new AppError("No product found with that ID", 404, res));
+    }
   });
 }
 
 export function addProduct(req: Request, res: Response, next: NextFunction) {
-  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  catchAsync(async () => {
     const newProduct = await Product.create(req.body, (err: Error) => {
       if (err) {
         console.log("There is an error: ", err);
-        next(new AppError("No product found with that ID", 404));
+        next(new AppError("No product found with that ID", 404, res));
       }
     });
-
-    getAllProducts(req, res, next);
 
     res.status(201).json({
       status: "success",
@@ -64,10 +67,10 @@ export function addProduct(req: Request, res: Response, next: NextFunction) {
 }
 
 export function deleteProduct(req: Request, res: Response, next: NextFunction) {
-  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+  catchAsync(async () => {
     await Product.findByIdAndDelete(req.params.id, (err: Error) => {
       if (err) {
-        next(new AppError("No product found with that ID", 404));
+        next(new AppError("No product found with that ID", 404, res));
       }
     }).clone();
 
@@ -78,36 +81,27 @@ export function deleteProduct(req: Request, res: Response, next: NextFunction) {
 }
 
 export function updateProduct(req: Request, res: Response, next: NextFunction) {
-  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
-    const product = await Product.findByIdAndUpdate(
-      req.params.id,
-      req.body,
-      {
+  catchAsync(async () => {
+    try {
+      const product = await Product.findByIdAndUpdate(req.params.id, req.body, {
         new: true,
         runValidators: true,
-      },
-      (err: Error) => {
-        if (err) {
-          next(new AppError("No product found with that ID", 404));
-        }
-      }
-    ).clone();
+      }).clone();
 
-    res.status(200).json({
-      status: "success",
-      data: {
-        product: product,
-      },
-    });
+      res.status(200).json({
+        status: "success",
+        data: {
+          product: product,
+        },
+      });
+    } catch (e) {
+      next(new AppError("No product found with that ID", 404, res));
+    }
   });
 }
 
-export function getProductStats(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  catchAsync(async (req: Request, res: Response, next: NextFunction) => {
+export async function getProductStats(res: Response) {
+  catchAsync(async () => {
     const stats = await Product.aggregate([
       {
         $match: { price: { $gte: 0 } },

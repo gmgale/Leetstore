@@ -1,4 +1,4 @@
-import AppError from "../utils/appError";
+import { AppError } from "../utils/appError";
 
 import { Request, Response, NextFunction } from "express";
 
@@ -70,7 +70,12 @@ const sendErrorProd = (err: myError, res: Response) => {
   }
 };
 
-export default (err: myError, res: Response, next: NextFunction) => {
+export const globalErrorHandler = (
+  err: myError,
+  _req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   err.statusCode = err.statusCode || 500;
   err.status = err.status || "Error";
 
@@ -89,6 +94,7 @@ export default (err: myError, res: Response, next: NextFunction) => {
     if (error.name === "TokenExpiredError") error = handleJWTExpiredError(res);
 
     sendErrorProd(error, res);
+    return;
   }
   next();
 };

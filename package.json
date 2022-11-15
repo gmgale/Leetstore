@@ -9,6 +9,7 @@
   "scripts": {
     "test": "NODE_ENV=test jest --detectOpenHandles",
     "start:dev": "NODE_ENV=development nodemon server.js",
+    "start:ts": "NODE_ENV=development node -r ts-node/register src/server.ts",
     "start:prod": "NODE_ENV=production nodemon server.js",
     "debug": "ndb server.js"
   },
@@ -27,6 +28,7 @@
     "@types/express": "^4.17.14",
     "@types/hpp": "^0.2.2",
     "@types/morgan": "^1.9.3",
+    "@types/node": "^18.11.9",
     "eslint": "^8.22.0",
     "eslint-config-airbnb-typescript": "^17.0.0",
     "eslint-config-prettier": "^8.5.0",
@@ -41,7 +43,8 @@
     "mongodb-memory-server": "^8.9.3",
     "nodemon": "^2.0.20",
     "prettier": "^2.7.1",
-    "supertest": "^6.3.0"
+    "supertest": "^6.3.0",
+    "ts-node": "^10.9.1"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

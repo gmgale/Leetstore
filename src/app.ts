@@ -8,12 +8,12 @@ import mongoSanitize from "express-mongo-sanitize";
 // import xssClean from "xss-clean"; TO-DO: Fix this
 import hpp from "hpp";
 
-import AppError from "./utils/appError";
-import globalErrorHandler from "./controllers/errorController";
-import productRouter from "./routes/productRoutes";
-import userRouter from "./routes/userRoutes";
+import {AppError} from "./utils/appError";
+import {globalErrorHandler} from "./controllers/errorController";
+import {productRouter} from "./routes/productRoutes";
+import {userRouter} from "./routes/userRoutes";
 
-const app = express();
+export const app = express();
 
 // Global Middleware
 
@@ -61,4 +61,3 @@ app.all("*", (req, res, next) => {
 
 app.use(globalErrorHandler);
 
-export default app;
