@@ -1,21 +1,25 @@
-const request = require("supertest");
+import { Document } from "mongoose";
+
+import request from "supertest";
 const testData = require("./utils/testDataImportDelete.js");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
-const app = require("../app");
-const { json } = require("express");
+import { app } from "../src/app";
 
 dotenv.config({ path: "./config.env" });
-dotenv.config({ path: "./secrets.env" });
+const mongoUri = process.env.localMongoUri;
+if (typeof mongoUri !== "string") {
+  throw new Error("MongoUriError");
+}
 
 beforeAll(() => {
-  mongoose.connect(global.__MONGO_URI__, (err) => {
+  mongoose.connect(process.env.localMongoUri, (err: Error) => {
     if (err) {
       console.error(err);
       process.exit(1);
     }
   });
-  // mongoose.set("debug", true);
+  mongoose.set("debug", true);
 });
 
 beforeEach(async () => {
@@ -41,18 +45,17 @@ describe("Product Routes", () => {
   it("GET /api/v1/products/:id", async () => {
     // Get _id of first product from all products
     let idFirstProductFromAll = 0;
-    let indvidualProductfromQuery = 0;
     let res = await request(app).get("/api/v1/products/").expect(200);
 
     idFirstProductFromAll = res.body.result[0]._id;
     res = await request(app).get(`/api/v1/products/${idFirstProductFromAll}`);
-    indvidualProductfromQuery = res.body.data;
+    const body: Document = res.body;
 
-    expect(idFirstProductFromAll).toBe(indvidualProductfromQuery._id);
+    expect(idFirstProductFromAll).toBe(body._id);
   });
 
   it("GET /api/v1/products/:id", async () => {
-    res = await request(app).get(`/api/v1/products/99999999999999`).expect(404);
+    await request(app).get(`/api/v1/products/99999999999999`).expect(404);
   });
 
   // Delete product by id
@@ -70,17 +73,19 @@ describe("Product Routes", () => {
 
     const cookies = res1.headers["set-cookie"][0]
       .split(",")
-      .map((item) => item.split(";")[0]);
+      .map((item: string) => item.split(";")[0]);
     const cookie = cookies.join(";");
 
-    res = await request(app).get("/api/v1/products/");
+    let res = await request(app).get("/api/v1/products/");
     expect(res.statusCode).toBe(200);
     const countBeforeDelete = Object.keys(res.body.result).length;
     const id = res.body.result[0]._id;
 
-    res = await request(app)
+    const reqCookie: string = cookie.split(";")[0];
+
+    await request(app)
       .delete(`/api/v1/products/${id}`)
-      .set("cookie", [cookie.split(";")[0]])
+      .set("cookie", reqCookie)
       .expect(204);
 
     res = await request(app).get("/api/v1/products/");
@@ -105,7 +110,7 @@ describe("Product Routes", () => {
 
     const cookies = res1.headers["set-cookie"][0]
       .split(",")
-      .map((item) => item.split(";")[0]);
+      .map((item: string) => item.split(";")[0]);
     const cookie = cookies.join(";");
 
     const sampleProduct = {
@@ -115,11 +120,11 @@ describe("Product Routes", () => {
       images: ["Dog food URL goes here..."],
     };
 
-    const res2 = await request(app)
+    await request(app)
       .post("/api/v1/products/")
       .send(sampleProduct)
       .set("Content-Type", "application/json")
-      .set("cookie", [cookie.split(";")[0]])
+      .set("Cookie", [cookie.split(";")[0]])
       .expect(201);
   });
 });

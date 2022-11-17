@@ -1,21 +1,28 @@
-const mongoose = require("mongoose");
-const userModel = require("../models/userModel");
+import mongoose from "mongoose";
+import { User } from "../src/models/userModel";
 const dropCollection = require("./utils/dropCollection");
+const dotenv = require("dotenv");
+
+dotenv.config({ path: "./config.env" });
+const mongoUri = process.env.localMongoUri;
+if (typeof mongoUri !== "string") {
+  throw new Error("MongoUriError");
+}
+beforeAll(() => {
+  mongoose.connect(mongoUri, (err) => {
+    if (err) {
+      console.error(err);
+      process.exit(1);
+    }
+  });
+  // mongoose.set("debug", true);
+});
+
+afterEach(async () => {
+  await dropCollection("users");
+});
 
 describe("User Model Test", () => {
-  beforeAll(() => {
-    mongoose.connect(global.__MONGO_URI__, (err) => {
-      if (err) {
-        console.error(err);
-        process.exit(1);
-      }
-    });
-  });
-
-  afterEach(async () => {
-    await dropCollection("users");
-  });
-
   it("create & save user successfully", async () => {
     const userData = {
       name: "George Gale",
@@ -24,7 +31,7 @@ describe("User Model Test", () => {
       passwordConfirm: "testPassword",
     };
 
-    const validUser = new userModel(userData);
+    const validUser = new User(userData);
     const savedUser = await validUser.save();
     // Object Id should be defined when successfully saved to MongoDB.
     expect(savedUser._id).toBeDefined();

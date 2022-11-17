@@ -1,6 +1,6 @@
 const fs = require("fs");
-const Product = require("../../models/productModel");
-const User = require("../../models/userModel");
+const Product = require("../../src/models/productModel");
+const User = require("../../src/models/userModel");
 
 // Read JSON file
 const product = JSON.parse(

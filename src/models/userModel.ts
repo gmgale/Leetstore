@@ -3,52 +3,65 @@ const validator = require("validator");
 const bcrypt = require("bcryptjs");
 import crypto from "crypto";
 
-const userSchema = new mongoose.Schema({
-  name: {
-    type: String,
-    required: [true, "A User must have a name."],
-  },
-  email: {
-    type: String,
-    required: [true, "A User must have an email."],
-    unique: true,
-    lowercase: true,
-    validate: [validator.isEmail, "please provide a valid email."],
-  },
-  photo: String,
-  role: {
-    type: String,
-    enum: ["user", "manager", "lead-manager", "admin"],
-    default: "user",
-  },
-  password: {
-    type: String,
-    required: [true, "Please provide a valid password"],
-    minlength: 8,
-    // Never show on any output
-    select: false,
-  },
-  passwordConfirm: {
-    type: String,
-    required: [true, "Please confirm your password"],
-    validate: {
-      // This only works on create and save
-      validator: (el: any) => {
-        // @ts-ignore
-        return el === this.password;
+const userSchema = new mongoose.Schema(
+  {
+    name: {
+      type: String,
+      required: [true, "A User must have a name."],
+    },
+    email: {
+      type: String,
+      required: [true, "A User must have an email."],
+      unique: true,
+      lowercase: true,
+      validate: [validator.isEmail, "please provide a valid email."],
+    },
+    photo: String,
+    role: {
+      type: String,
+      enum: ["user", "manager", "lead-manager", "admin"],
+      default: "user",
+    },
+    password: {
+      type: String,
+      required: [true, "Please provide a valid password"],
+      minlength: 8,
+      // Never show on any output
+      select: false,
+    },
+    passwordConfirm: {
+      type: String,
+      required: [true, "Please confirm your password"],
+      validate: {
+        // This only works on create and save
+        validator: (el: any) => {
+          // @ts-ignore
+          return el === this.password;
+        },
+        message: "The passwords must match.",
       },
-      message: "The passwords must match.",
+    },
+    passwordChangedAt: Date,
+    passwordResetToken: String,
+    passwordResetExpires: Date,
+    active: {
+      type: Boolean,
+      default: true,
+      select: false,
     },
   },
-  passwordChangedAt: Date,
-  passwordResetToken: String,
-  passwordResetExpires: Date,
-  active: {
-    type: Boolean,
-    default: true,
-    select: false,
-  },
-});
+  {
+    methods: {
+      correctPassword: async function (
+        candidatePassword: string,
+        userPassword: string
+      ) {
+        return await bcrypt.compare(candidatePassword, userPassword);
+      },
+    },
+  }
+);
+
 // @ts-ignore
 userSchema.pre("/^find/", function (next) {
   // This points to current query
@@ -79,13 +92,6 @@ userSchema.pre("save", async function (next) {
   this.passwordConfirm = undefined;
   next();
 });
-
-userSchema.methods.correctPassword = async function (
-  candidatePassword: string,
-  userPassword: string
-) {
-  return await bcrypt.compare(candidatePassword, userPassword);
-};
 
 userSchema.methods.changedPasswordAfter = function (JWTTimestamp: number) {
   // If user never changed password, default to false
