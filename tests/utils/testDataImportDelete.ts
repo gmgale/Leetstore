@@ -1,6 +1,6 @@
-const fs = require("fs");
-const Product = require("../../src/models/productModel");
-const User = require("../../src/models/userModel");
+import fs from "fs";
+import { Product } from "../../src/models/productModel";
+import { User } from "../../src/models/userModel";
 
 // Read JSON file
 const product = JSON.parse(
@@ -8,17 +8,17 @@ const product = JSON.parse(
 );
 
 // Import function into database
-exports.importData = async () => {
+export async function importData() {
   try {
-    // Tour.create can accept an array, JSON parse abover converts json to this array.
+    // Product.create can accept an array, JSON parse abover converts json to this array.
     await Product.create(product);
   } catch (err) {
     console.log(err);
   }
-};
+}
 
 // Delete all data from DB
-exports.deleteData = async () => {
+export async function deleteData() {
   try {
     // deleteMany with 0 args will drop all.
     await Product.deleteMany();
@@ -26,4 +26,4 @@ exports.deleteData = async () => {
   } catch (err) {
     console.log(err);
   }
-};
+}

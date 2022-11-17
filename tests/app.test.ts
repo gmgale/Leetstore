@@ -1,33 +1,29 @@
 import { Document } from "mongoose";
 
 import request from "supertest";
-const testData = require("./utils/testDataImportDelete.js");
-const mongoose = require("mongoose");
-const dotenv = require("dotenv");
+import { importData, deleteData } from "./utils/testDataImportDelete";
+import mongoose from "mongoose";
 import { app } from "../src/app";
+import { MongoMemoryServer } from "mongodb-memory-server";
 
-dotenv.config({ path: "./config.env" });
-const mongoUri = process.env.localMongoUri;
-if (typeof mongoUri !== "string") {
-  throw new Error("MongoUriError");
-}
-
-beforeAll(() => {
-  mongoose.connect(process.env.localMongoUri, (err: Error) => {
-    if (err) {
-      console.error(err);
-      process.exit(1);
-    }
-  });
+beforeAll(async () => {
+  const mongoServer = await MongoMemoryServer.create();
+  (async () => {
+    await mongoose.connect(mongoServer.getUri(), { dbName: "" });
+  })();
   mongoose.set("debug", true);
 });
 
 beforeEach(async () => {
-  await testData.importData();
+  await importData();
 });
 
 afterEach(async () => {
-  await testData.deleteData();
+  await deleteData();
+});
+
+afterAll(async () => {
+  await mongoose.disconnect();
 });
 
 describe("Product Routes", () => {

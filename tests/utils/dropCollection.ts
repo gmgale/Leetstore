@@ -1,8 +1,8 @@
 const mongoose = require("mongoose");
 
-module.exports = (collectionName) => {
+export const dropCollection = (collectionName: string) => {
   const collection = mongoose.connection.collections[collectionName];
-  collection.drop((err) => {
+  collection.drop((err: string) => {
     if (err) throw new Error(err);
   });
 };
