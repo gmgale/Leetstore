@@ -34,7 +34,7 @@ const userSchema = new mongoose.Schema(
       required: [true, "Please confirm your password"],
       validate: {
         // This only works on create and save
-        validator: (el: any) => {
+        validator: function (el: any) {
           // @ts-ignore
           return el === this.password;
         },

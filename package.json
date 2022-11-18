@@ -8,9 +8,10 @@
   },
   "scripts": {
     "test": "NODE_ENV=test jest --detectOpenHandles",
-    "start:dev": "NODE_ENV=development nodemon server.js",
+    "test-serial": "NODE_ENV=test jest --detectOpenHandles --runInBand",
+    "start:dev": "NODE_ENV=development nodemon dist/server.js",
     "start:ts": "NODE_ENV=development node -r ts-node/register src/server.ts",
-    "start:prod": "NODE_ENV=production nodemon server.js",
+    "start:prod": "NODE_ENV=production nodemon dist/server.js",
     "debug": "ndb server.js",
     "build": "rm -rf dist && tsc -p tsconfig-build.json"
   },

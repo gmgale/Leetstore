@@ -6,11 +6,10 @@ import mongoose from "mongoose";
 import { app } from "../src/app";
 import { MongoMemoryServer } from "mongodb-memory-server";
 
+let mongoServer: any;
 beforeAll(async () => {
-  const mongoServer = await MongoMemoryServer.create();
-  (async () => {
-    await mongoose.connect(mongoServer.getUri(), { dbName: "" });
-  })();
+  mongoServer = await MongoMemoryServer.create();
+  await mongoose.connect(mongoServer.getUri());
   mongoose.set("debug", true);
 });
 
@@ -24,6 +23,7 @@ afterEach(async () => {
 
 afterAll(async () => {
   await mongoose.disconnect();
+  await mongoServer.stop();
 });
 
 describe("Product Routes", () => {

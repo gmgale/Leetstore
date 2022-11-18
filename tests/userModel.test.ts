@@ -1,25 +1,26 @@
 import mongoose from "mongoose";
 import { User } from "../src/models/userModel";
-const dropCollection = require("./utils/dropCollection");
-const dotenv = require("dotenv");
-
-dotenv.config({ path: "./config.env" });
-const mongoUri = process.env.localMongoUri;
-if (typeof mongoUri !== "string") {
-  throw new Error("MongoUriError");
-}
-beforeAll(() => {
-  mongoose.connect(mongoUri, (err) => {
-    if (err) {
-      console.error(err);
-      process.exit(1);
-    }
-  });
+import { MongoMemoryServer } from "mongodb-memory-server";
+import { importData, deleteData } from "./utils/testDataImportDelete";
+let mongoServer: any;
+beforeAll(async () => {
+  mongoServer = await MongoMemoryServer.create();
+  await mongoose.connect(mongoServer.getUri());
   // mongoose.set("debug", true);
 });
 
+beforeEach(async () => {
+  await importData();
+  await User.find({});
+});
+
 afterEach(async () => {
-  await dropCollection("users");
+  await deleteData();
+});
+
+afterAll(async () => {
+  await mongoose.disconnect();
+  await mongoServer.stop();
 });
 
 describe("User Model Test", () => {
