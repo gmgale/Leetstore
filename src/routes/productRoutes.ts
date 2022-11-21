@@ -1,4 +1,4 @@
-import { Router, Response } from "express";
+import { Router } from "express";
 
 export const productRouter = Router();
 import {
@@ -14,9 +14,7 @@ import { protect } from "../controllers/authController";
 
 productRouter.route("/top-products").get(aliasTopProducts, getAllProducts);
 
-productRouter.route("/product-stats").get(async (res: Response) => {
-  await getProductStats(res);
-});
+productRouter.route("/product-stats").get(getProductStats);
 
 productRouter.route("/").get(getAllProducts).post(protect, addProduct);
 
@@ -25,4 +23,3 @@ productRouter.route("/:id").get(getProduct).patch(updateProduct).delete(
   // authController.restrictTo("admin", "manager", "lead-manager"),
   deleteProduct
 );
-

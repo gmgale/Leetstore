@@ -1,38 +1,25 @@
-const { promisify } = require("util");
-const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
-const User = require("../models/userModel");
-const catchAsync = require("../utils/catchAsync");
-const AppError = require("../utils/appError");
-const sendEmail = require("../utils/email");
-
+// @ts-nocheck
+import { promisify } from "util";
+import jwt, { Secret } from "jsonwebtoken";
+import crypto from "crypto";
+import { User } from "../models/userModel";
+import { catchAsync } from "../utils/catchAsync";
+import { AppError } from "../utils/appError";
+import { sendEmail } from "../utils/email";
 import { Request, Response, NextFunction } from "express";
 
 const signToken = (id: String) =>
-  jwt.sign(
-    {
-      id,
-    },
-    process.env.JWT_SECRET,
-    {
-      expiresIn: process.env.JWT_EXPIRES_IN,
-    }
-  );
-
-interface User {
-  name: string;
-  email: string;
-  _id: string;
-  id: string;
-  password: string | undefined;
-}
+  jwt.sign(id, process.env.JWT_SECRET as string, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
 
 const createSendToken = (
-  user: User,
+  user: any,
   statusCode: number,
   res: Response
 ): void => {
   // Log the user in, send JWT
+  // @ts-ignore
   const token = signToken(user._id);
 
   let expire = 0;
@@ -82,19 +69,18 @@ export function login(req: Request, res: Response, next: NextFunction) {
 
     // Check if email and password exist
     if (!email || !password) {
-      return next(new AppError("Please provide email and password.", 400));
+      return next(new AppError("Please provide email and password.", 400, res));
     }
     // Check if the user exists and password is correct
     const user = await User.findOne({ email: email }).select("+password");
 
     if (!user || !(await user.correctPassword(password, user.password))) {
-      return next(new AppError("Incorrect email or password", 401));
+      return next(new AppError("Incorrect email or password", 401, res));
     }
 
     createSendToken(user, 200, res);
   });
 }
-
 export function protect(req: Request, res: Response, next: NextFunction) {
   catchAsync(async () => {
     let token;
@@ -114,17 +100,19 @@ export function protect(req: Request, res: Response, next: NextFunction) {
     }
 
     if (!token) {
-      return next(new AppError("You are not logged in.", 401));
+      return next(new AppError("You are not logged in.", 401, res));
     }
 
     // Verification
-    const decoded = await promisify(jwt.verify)(token, process.env.JWT_SECRET);
+    const secret: Secret = process.env.JWT_SECRET as Secret;
+    const decoded = jwt.verify(token, secret);
+    console.log(decoded);
 
     // Check user still exists
     const currentUser = await User.findById(decoded.id);
     if (!currentUser) {
       return next(
-        new AppError("User belonging to this token does not exist.", 401)
+        new AppError("User belonging to this token does not exist.", 401, res)
       );
     }
 
@@ -133,7 +121,8 @@ export function protect(req: Request, res: Response, next: NextFunction) {
       return next(
         new AppError(
           "User recently changed password, please log in again.",
-          401
+          401,
+          res
         )
       );
     }
@@ -154,7 +143,8 @@ export function restrictTo() {
         return next(
           new AppError(
             "You do not have permission to perform this action.",
-            403
+            403,
+            res
           )
         );
       }
@@ -172,7 +162,7 @@ export function forgotPassword(
     // Get user based on POSTed email
     const user = await User.findOne({ email: req.body.email });
     if (!user) {
-      return next(new AppError("No user with that email found", 404));
+      return next(new AppError("No user with that email found", 404, res));
     }
 
     const resetToken = user.createPasswordResetToken();
@@ -204,7 +194,8 @@ export function forgotPassword(
       return next(
         new AppError(
           "There was an error sending the email, try again later.",
-          500
+          500,
+          res
         )
       );
     }
@@ -226,7 +217,7 @@ export function resetPassword(req: Request, res: Response, next: NextFunction) {
     });
 
     if (!user) {
-      return next(new AppError("Token is expired or invalid.", 400));
+      return next(new AppError("Token is expired or invalid.", 400, res));
     }
 
     user.password = req.body.password;
@@ -240,6 +231,7 @@ export function resetPassword(req: Request, res: Response, next: NextFunction) {
     createSendToken(user, 201, res);
   });
 }
+
 export function updatePassword(
   req: Request,
   res: Response,
@@ -253,7 +245,7 @@ export function updatePassword(
     if (
       !(await user.correctPassword(req.body.currentPassword, user.password))
     ) {
-      return next(new AppError("Your current password is wrong.", 403));
+      return next(new AppError("Your current password is wrong.", 403, res));
     }
 
     // If so, update password

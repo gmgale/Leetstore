@@ -2,6 +2,7 @@ import mongoose from "mongoose";
 import { User } from "../src/models/userModel";
 import { MongoMemoryServer } from "mongodb-memory-server";
 import { importData, deleteData } from "./utils/testDataImportDelete";
+
 let mongoServer: any;
 beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();

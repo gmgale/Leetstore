@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
 
-import {app} from "./app";
+import { app } from "./app";
 
 // Global uncaught exception
 process.on("uncaughtException", (err) => {
@@ -14,7 +14,6 @@ dotenv.config({ path: "./config.env" });
 dotenv.config({ path: "./secrets.env" });
 
 // Database connection
-
 const mongodbUser = process.env.MONGODB_USER;
 const mongodbPass = process.env.MONGODB_PASS;
 const mongodbDataBase = process.env.MONGODB_DATABASE;
@@ -24,13 +23,21 @@ if (
   typeof mongodbPass === "string" &&
   typeof mongodbDataBase === "string"
 ) {
-  const dbConn = mongodbDataBase
-    .replace("<USERNAME>", mongodbUser)
-    .replace("<PASSWORD>", mongodbPass);
+  const dbConn = mongodbDataBase.replace("<password>", mongodbPass);
 
-  mongoose.connect(dbConn).then(() => {
-    console.log("DB connection sucessful!");
+  // Development logging
+  if (process.env.NODE_ENV === "development") {
+    // console.log(process.env);
+    mongoose.set("debug", true);
+  }
+
+  mongoose.connect(dbConn, (err) => {
+    if (err) {
+      console.log(err);
+    }
   });
+
+  console.log("DB connection sucessful!");
 } else {
   throw new Error("Error in connection settings.");
 }

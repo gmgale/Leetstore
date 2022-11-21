@@ -1,7 +1,5 @@
-import { Request, Response, NextFunction } from "express";
-// eslint-disable-next-line arrow-body-style
 export const catchAsync = (fn: any) => {
-  return (req: Request, res: Response, next: NextFunction) => {
+  return (req: any, res: any, next: any) => {
     fn(req, res, next).catch(next);
   };
 };
