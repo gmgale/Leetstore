@@ -17,7 +17,6 @@ export function aliasTopProducts(
 
 export const getAllProducts = catchAsync(
   async (req: Request, res: Response) => {
-    console.log("After");
     //@ts-ignore
     const features = new APIFeatures(Product.find(), req.query)
       .filter()

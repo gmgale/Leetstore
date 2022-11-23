@@ -9,9 +9,11 @@ import { sendEmail } from "../utils/email";
 import { Request, Response, NextFunction } from "express";
 
 const signToken = (id: String) =>
-  jwt.sign(id, process.env.JWT_SECRET as string, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
-  });
+  jwt.sign(
+    { id: id },
+    process.env.JWT_SECRET as string,
+    { expiresIn: process.env.JWT_EXPIRES_IN as string }
+  );
 
 const createSendToken = (
   user: any,
@@ -19,18 +21,19 @@ const createSendToken = (
   res: Response
 ): void => {
   // Log the user in, send JWT
-  // @ts-ignore
-  const token = signToken(user._id);
+
+  const userId = user._id.toHexString();
+  const token = signToken(userId);
 
   let expire = 0;
   if (typeof process.env.JWT_COOKIE_EXPIRES_IN === "string") {
     expire = Number(process.env.JWT_COOKIE_EXPIRES_IN);
   }
   expire = expire * 24 * 60 * 60 * 1000;
-  const date = new Date(expire);
+  const date = new Date(expire).getTime();
 
   const cookieOptions = {
-    expires: date,
+    maxAge: date,
     httpOnly: true,
     secure: false,
   };
@@ -51,20 +54,18 @@ const createSendToken = (
   });
 };
 
-export function signup(req: Request, res: Response) {
-  catchAsync(async () => {
-    const newUser = await User.create({
-      name: req.body.name,
-      email: req.body.email,
-      password: req.body.password,
-      passwordConfirm: req.body.passwordConfirm,
-    });
-    createSendToken(newUser, 201, res);
+export const signup = catchAsync(async (req: Request, res: Response) => {
+  const newUser = await User.create({
+    name: req.body.name,
+    email: req.body.email,
+    password: req.body.password,
+    passwordConfirm: req.body.passwordConfirm,
   });
-}
+  createSendToken(newUser, 201, res);
+});
 
-export function login(req: Request, res: Response, next: NextFunction) {
-  catchAsync(async () => {
+export const login = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
     const { email, password } = req.body;
 
     // Check if email and password exist
@@ -79,10 +80,11 @@ export function login(req: Request, res: Response, next: NextFunction) {
     }
 
     createSendToken(user, 200, res);
-  });
-}
-export function protect(req: Request, res: Response, next: NextFunction) {
-  catchAsync(async () => {
+  }
+);
+
+export const protect = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
     let token;
     // Check token/cookie exists
     const JWTCookie = req.headers.cookie?.startsWith("jwt")
@@ -106,7 +108,6 @@ export function protect(req: Request, res: Response, next: NextFunction) {
     // Verification
     const secret: Secret = process.env.JWT_SECRET as Secret;
     const decoded = jwt.verify(token, secret);
-    console.log(decoded);
 
     // Check user still exists
     const currentUser = await User.findById(decoded.id);
@@ -130,8 +131,8 @@ export function protect(req: Request, res: Response, next: NextFunction) {
     // Grant access to protected route
     res.locals.user = currentUser;
     next();
-  });
-}
+  }
+);
 
 export function restrictTo() {
   (...roles: Array<string>) =>
@@ -153,12 +154,8 @@ export function restrictTo() {
     };
 }
 
-export function forgotPassword(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  catchAsync(async () => {
+export const forgotPassword = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
     // Get user based on POSTed email
     const user = await User.findOne({ email: req.body.email });
     if (!user) {
@@ -199,62 +196,52 @@ export function forgotPassword(
         )
       );
     }
+  }
+);
+
+export const resetPassword = catchAsync(async () => {
+  // Get user based on token
+  const hashedToken = crypto
+    .createHash("sha256")
+    .update(req.params.token)
+    .digest("hex");
+
+  // If token is not expired and user exists, set the new password
+  const user = await User.findOne({
+    passwordResetToken: hashedToken,
+    passwordResetExpires: { $gt: Date.now() },
   });
-}
 
-export function resetPassword(req: Request, res: Response, next: NextFunction) {
-  catchAsync(async () => {
-    // Get user based on token
-    const hashedToken = crypto
-      .createHash("sha256")
-      .update(req.params.token)
-      .digest("hex");
+  if (!user) {
+    return next(new AppError("Token is expired or invalid.", 400, res));
+  }
 
-    // If token is not expired and user exists, set the new password
-    const user = await User.findOne({
-      passwordResetToken: hashedToken,
-      passwordResetExpires: { $gt: Date.now() },
-    });
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  user.passwordResetToken = undefined;
+  user.passwordResetExpires = undefined;
 
-    if (!user) {
-      return next(new AppError("Token is expired or invalid.", 400, res));
-    }
+  await user.save();
 
-    user.password = req.body.password;
-    user.passwordConfirm = req.body.passwordConfirm;
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
+  // Log the user in, send JWT
+  createSendToken(user, 201, res);
+});
 
-    await user.save();
+export const updatePassword = catchAsync(async () => {
+  // Get user from coollection
+  const user = await User.findById(res.locals.user.id).select("+password");
 
-    // Log the user in, send JWT
-    createSendToken(user, 201, res);
-  });
-}
+  // Check if posted password is correct
+  if (!(await user.correctPassword(req.body.currentPassword, user.password))) {
+    return next(new AppError("Your current password is wrong.", 403, res));
+  }
 
-export function updatePassword(
-  req: Request,
-  res: Response,
-  next: NextFunction
-) {
-  catchAsync(async () => {
-    // Get user from coollection
-    const user = await User.findById(res.locals.user.id).select("+password");
+  // If so, update password
+  user.password = req.body.password;
+  user.passwordConfirm = req.body.passwordConfirm;
+  // Use save instead of findByIdAndUpdate to run pre-save middleware
+  await user.save();
 
-    // Check if posted password is correct
-    if (
-      !(await user.correctPassword(req.body.currentPassword, user.password))
-    ) {
-      return next(new AppError("Your current password is wrong.", 403, res));
-    }
-
-    // If so, update password
-    user.password = req.body.password;
-    user.passwordConfirm = req.body.passwordConfirm;
-    // Use save instead of findByIdAndUpdate to run pre-save middleware
-    await user.save();
-
-    // Log user in, send JWT
-    createSendToken(user, 201, res);
-  });
-}
+  // Log user in, send JWT
+  createSendToken(user, 201, res);
+});

@@ -1,17 +1,21 @@
-import { Document } from "mongoose";
-
 import request from "supertest";
 import { importData, deleteData } from "./utils/testDataImportDelete";
 import mongoose from "mongoose";
 import { app } from "../src/app";
 import { MongoMemoryServer } from "mongodb-memory-server";
+import dotenv from "dotenv";
 
 let mongoServer: any;
 beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
   await mongoose.connect(mongoServer.getUri());
-  mongoose.set("debug", true);
-});
+  // mongoose.set("debug", true);
+
+
+  // Load JWT config, DB config is not used in tests
+  dotenv.config({ path: "./config.env" });
+  dotenv.config({ path: "./secrets.env" });
+}); 
 
 beforeEach(async () => {
   await importData();
@@ -45,9 +49,9 @@ describe("Product Routes", () => {
 
     idFirstProductFromAll = res.body.result[0]._id;
     res = await request(app).get(`/api/v1/products/${idFirstProductFromAll}`);
-    const body: Document = res.body;
+    const body: any = res.body;
 
-    expect(idFirstProductFromAll).toBe(body._id);
+    expect(idFirstProductFromAll).toBe(body.data._id);
   });
 
   it("GET /api/v1/products/:id", async () => {

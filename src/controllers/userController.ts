@@ -17,7 +17,7 @@ const filterObj = (
   return newObj;
 };
 
-exports.updateMe = catchAsync(
+export const updateMe = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     // Create error if user POSTs password data
     if (
@@ -52,7 +52,7 @@ exports.updateMe = catchAsync(
   }
 );
 
-exports.deleteMe = catchAsync(
+export const deleteMe = catchAsync(
   async (req: Request, res: Response, _next: NextFunction) => {
     //@ts-ignore
     await User.findByIdAndUpdate(req.user.id, {
@@ -68,7 +68,7 @@ exports.deleteMe = catchAsync(
   }
 );
 
-exports.getAllUsers = catchAsync(
+export const getAllUsers = catchAsync(
   async (_req: Request, res: Response, _next: NextFunction) => {
     const users = await User.find();
 
@@ -78,25 +78,25 @@ exports.getAllUsers = catchAsync(
     });
   }
 );
-exports.getUser = (_req: Request, res: Response) => {
+export const getUser = (_req: Request, res: Response) => {
   res.status(500).json({
     status: "error",
     message: "This route is not yet defined!",
   });
 };
-exports.createUser = (_req: Request, res: Response) => {
+export const createUser = (_req: Request, res: Response) => {
   res.status(500).json({
     status: "error",
     message: "This route is not yet defined!",
   });
 };
-exports.updateUser = (_req: Request, res: Response) => {
+export const updateUser = (_req: Request, res: Response) => {
   res.status(500).json({
     status: "error",
     message: "This route is not yet defined!",
   });
 };
-exports.deleteUser = (_req: Request, res: Response) => {
+export const deleteUser = (_req: Request, res: Response) => {
   res.status(500).json({
     status: "error",
     message: "This route is not yet defined!",

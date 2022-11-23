@@ -2,32 +2,35 @@ const express = require("express");
 
 export const userRouter = express.Router();
 
-const userController = require("../controllers/userController");
-const authController = require("../controllers/authController");
+import {
+  updateMe,
+  deleteMe,
+  getAllUsers,
+  getUser,
+  createUser,
+  updateUser,
+  deleteUser,
+} from "../controllers/userController";
+import {
+  signup,
+  login,
+  forgotPassword,
+  updatePassword,
+  resetPassword,
+  protect,
+} from "../controllers/authController";
 
-userRouter.post("/signup", authController.signup);
-userRouter.post("/login", authController.login);
+userRouter.post("/signup", signup);
+userRouter.post("/login", login);
 
-userRouter.post("/forgotPassword", authController.forgotPassword);
-userRouter.patch("/resetPassword/:token", authController.resetPassword);
+userRouter.post("/forgotPassword", forgotPassword);
+userRouter.patch("/resetPassword/:token", resetPassword);
 
-userRouter.patch("/updateMe", authController.protect, userController.updateMe);
-userRouter.delete("/deleteMe", authController.protect, userController.deleteMe);
+userRouter.patch("/updateMe", protect, updateMe);
+userRouter.delete("/deleteMe", protect, deleteMe);
 
-userRouter.patch(
-  "/updateMyPassword",
-  authController.protect,
-  authController.updatePassword
-);
+userRouter.patch("/updateMyPassword", protect, updatePassword);
 
-userRouter
-  .route("/")
-  .get(userController.getAllUsers)
-  .post(userController.createUser);
+userRouter.route("/").get(getAllUsers).post(createUser);
 
-userRouter
-  .route("/:id")
-  .get(userController.getUser)
-  .patch(userController.updateUser)
-  .delete(userController.deleteUser);
-
+userRouter.route("/:id").get(getUser).patch(updateUser).delete(deleteUser);

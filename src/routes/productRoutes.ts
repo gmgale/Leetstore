@@ -19,7 +19,7 @@ productRouter.route("/product-stats").get(getProductStats);
 productRouter.route("/").get(getAllProducts).post(protect, addProduct);
 
 productRouter.route("/:id").get(getProduct).patch(updateProduct).delete(
-  protect,
+  // protect,
   // authController.restrictTo("admin", "manager", "lead-manager"),
   deleteProduct
 );
