@@ -7,12 +7,23 @@ on:
     branches: ["dev"]
 
   # Allows you to run this workflow manually from the Actions tab
-  workflow_dispatch:
+  workflow_dispatch: true
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
+  eslint:
+    name: ESLint TypeScript checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install modules
+        run: yarn
+      - name: Run ESLint
+        run: eslint . --ext .ts,.tsx
+
   tsc:
     name: TSC test and complie
+    needs: eslint
     runs-on: ubuntu-latest
     # Runs a single command using the runners shell
     strategy:
@@ -33,12 +44,6 @@ jobs:
         with:
           name: dist
           path: ./dist
-
-  # eslint:
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - uses: actions/checkout@v1
-  #     - uses: stefanoeb/eslint-action@1.0.2
 
   tests:
     name: Jest Tests
