@@ -11,7 +11,7 @@ on:
     inputs:
       tags:
         description: "Test tags"
-        
+
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   eslint:
@@ -20,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Install modules
-        run: yarn
+        run: npm i
       - name: Run ESLint
         run: eslint . --ext .ts,.tsx
 
