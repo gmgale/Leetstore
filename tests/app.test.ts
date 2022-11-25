@@ -3,16 +3,12 @@ import { importData, deleteData } from "./utils/testDataImportDelete";
 import mongoose from "mongoose";
 import { app } from "../src/app";
 import { MongoMemoryServer } from "mongodb-memory-server";
-import dotenv from "dotenv";
 
 let mongoServer: any;
 beforeAll(async () => {
   mongoServer = await MongoMemoryServer.create();
   await mongoose.connect(mongoServer.getUri());
   // mongoose.set("debug", true);
-
-  // Load JWT config, DB config is not used in tests
-  dotenv.config({ path: "./config.env" });
 });
 
 beforeEach(async () => {

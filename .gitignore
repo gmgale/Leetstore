@@ -1,5 +1,4 @@
 node_modules
-config.env
 test-report.html
 coverage
 globalConfig.json

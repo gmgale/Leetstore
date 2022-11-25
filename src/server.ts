@@ -1,5 +1,4 @@
 import mongoose from "mongoose";
-import dotenv from "dotenv";
 
 import { app } from "./app";
 
@@ -9,8 +8,6 @@ process.on("uncaughtException", (err) => {
   console.log("Uncaught exception, shutting down...");
   process.exit(1);
 });
-
-dotenv.config({ path: "../../config.env" });
 
 // Database connection
 const mongodbUser = process.env.MONGODB_USER;
