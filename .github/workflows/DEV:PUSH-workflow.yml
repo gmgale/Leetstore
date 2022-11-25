@@ -4,7 +4,7 @@ name: CI
 on:
   # Triggers the workflow on push or pull request events but only for the "main" branch
   push:
-    branches: [ "dev" ]
+    branches: ["dev"]
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -12,29 +12,60 @@ on:
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
   tsc:
+    name: TSC test and complie
     runs-on: ubuntu-latest
+    # Runs a single command using the runners shell
+    strategy:
+      matrix:
+        node-version: [16.x]
+
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: npm
+      - run: npm ci
+      - run: npm run build
+      - name: Upload dist dir
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: ./dist
 
-      # Runs a single command using the runners shell
-      - name: tsc
-        uses: icrawl/action-tsc@v1
-      
-  eslint:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: stefanoeb/eslint-action@1.0.2
+  # eslint:
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v1
+  #     - uses: stefanoeb/eslint-action@1.0.2
 
-  test:
+  tests:
+    name: Jest Tests
+    needs: tsc
     runs-on: ubuntu-latest
+    # Runs a single command using the runners shell
+    strategy:
+      matrix:
+        node-version: [16.x]
+
     steps:
-      - uses: actions/checkout@v1
-      - name: Run Jest
-        uses: stefanoeb/jest-action@1.0.3
-      
+      - name: download dist dir
+        uses: actions/upload-artifact@v3
+        with:
+          name: dist
+          path: ./dist
+      - uses: actions/checkout@v3
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node-version }}
+      - run: npm ci
+      - run: npm run test
+
   docker-build:
+    name: Docker Build
+    needs: tests
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
