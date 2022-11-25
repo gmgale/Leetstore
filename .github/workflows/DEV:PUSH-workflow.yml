@@ -22,7 +22,7 @@ jobs:
       - name: Install modules
         run: npm i
       - name: Run ESLint
-        run: eslint . --ext .ts,.tsx
+        run: npx eslint . --ext .ts,.tsx
 
   tsc:
     name: TSC test and complie
