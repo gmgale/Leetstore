@@ -1,5 +1,5 @@
 node_modules
-secrets.env
+config.env
 test-report.html
 coverage
 globalConfig.json

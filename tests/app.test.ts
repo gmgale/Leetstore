@@ -11,11 +11,9 @@ beforeAll(async () => {
   await mongoose.connect(mongoServer.getUri());
   // mongoose.set("debug", true);
 
-
   // Load JWT config, DB config is not used in tests
   dotenv.config({ path: "./config.env" });
-  dotenv.config({ path: "./secrets.env" });
-}); 
+});
 
 beforeEach(async () => {
   await importData();

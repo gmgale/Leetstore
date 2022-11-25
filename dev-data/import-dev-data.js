@@ -4,7 +4,6 @@ const dotenv = require("dotenv");
 const Product = require("../src/models/productModel");
 
 dotenv.config({ path: "./../config.env" });
-dotenv.config({ path: "./../secrets.env" });
 
 // Database connection
 const dbConn = process.env.DATABASE.replace(
