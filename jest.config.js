@@ -5,4 +5,5 @@ module.exports = {
   verbose: true,
   testEnvironment: "node",
   globalTeardown: "<rootDir>/test-teardown-globals.js",
+  testMatch: ["**/?(*.)+(spec|test).js"],
 };
