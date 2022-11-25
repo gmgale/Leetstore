@@ -7,7 +7,7 @@
     "node": ">12.22.9"
   },
   "scripts": {
-    "test": "NODE_ENV=test JWT_SECRET=abcdabcd12341234 jest --detectOpenHandles",
+    "test": "NODE_ENV=test jest --detectOpenHandles",
     "test-serial": "NODE_ENV=test jest --detectOpenHandles --runInBand",
     "start:dev": "NODE_ENV=development node --trace-warnings dist/server.js",
     "start:ts": "NODE_ENV=development node -r ts-node/register src/server.ts",
