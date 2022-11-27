@@ -24,6 +24,15 @@ jobs:
   #       run: npm i
   #     - name: Run ESLint
   #   run: npx eslint . --ext .ts,.tsx
+  nodeModules:
+    name: Install NPM packages and cache
+    runs-on: ubuntu-latest
+    steps:
+      - run: npm ci
+      - uses: actions/cache@v3
+        with:
+          path: /node_modules # Note that this path is not influenced by working-directory set in defaults, for example
+          key: nodeModulesKey
 
   tsc:
     name: TSC test and complie
@@ -41,7 +50,10 @@ jobs:
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
-      - run: npm ci
+      - uses: actions/cache@v3
+        with:
+          path: /node_modules
+          key: nodeModulesKey
       - run: npm run build
       - name: Upload dist dir
         uses: actions/upload-artifact@v3
@@ -69,7 +81,10 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version: ${{ matrix.node-version }}
-      - run: npm ci
+      - uses: actions/cache@v3
+        with:
+          path: /node_modules
+          key: nodeModulesKey
       - run: npm run test
         shell: bash
 
