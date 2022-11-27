@@ -1,0 +1,7 @@
+node_modules
+test-report.html
+coverage
+globalConfig.json
+.vscode
+dist
+secrets.txt
