@@ -9,10 +9,10 @@
   "scripts": {
     "test": "NODE_ENV=test JWT_SECRET=1234abcd1234abcd jest --detectOpenHandles --bail",
     "test-serial": "NODE_ENV=test JWT_SECRET=1234abcd1234abcd jest --detectOpenHandles --runInBand",
-    "start:dev": "NODE_ENV=development node --trace-warnings dist/server.js",
+    "start:dev": "NODE_ENV=development node --trace-warnings dist/src/server.js",
     "start:ts": "NODE_ENV=development node -r ts-node/register src/server.ts",
-    "start:prod": "NODE_ENV=production nodemon dist/server.js",
-    "debug": "ndb server.js",
+    "start:prod": "NODE_ENV=production nodemon dist/src/server.js",
+    "debug": "ndb dist/src/server.js",
     "build": "rm -rf dist && tsc -p tsconfig-build.json"
   },
   "repository": {
